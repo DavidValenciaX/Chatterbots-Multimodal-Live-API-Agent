@@ -27,7 +27,7 @@ import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 import { useUI } from '@/lib/state';
 
 export type ControlTrayProps = {
-  children?: ReactNode;
+  readonly children?: ReactNode;
 };
 
 function ControlTray({ children }: ControlTrayProps) {
