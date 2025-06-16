@@ -37,7 +37,7 @@ export function renderBasicFace(props: BasicFaceProps) {
   ctx.clearRect(0, 0, width, height);
 
   // Draw the background circle
-  ctx.fillStyle = color || 'white';
+  ctx.fillStyle = color ?? 'white';
   ctx.beginPath();
   ctx.arc(width / 2, height / 2, width / 2 - 20, 0, Math.PI * 2);
   ctx.fill();

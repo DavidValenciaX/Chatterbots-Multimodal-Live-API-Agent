@@ -19,11 +19,11 @@ const TALKING_STATE_COOLDOWN_MS = 2000;
 
 type BasicFaceProps = {
   /** The canvas element on which to render the face. */
-  canvasRef: RefObject<HTMLCanvasElement | null>;
+  readonly canvasRef: RefObject<HTMLCanvasElement | null>;
   /** The radius of the face. */
-  radius?: number;
+  readonly radius?: number;
   /** The color of the face. */
-  color?: string;
+  readonly color?: string;
 };
 
 export default function BasicFace({
