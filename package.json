@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/genai": "^1.4.0",
+    "@google/genai": "^1.29.1",
     "classnames": "^2.5.1",
     "eventemitter3": "^5.0.1",
     "lodash": "^4.17.21",
@@ -20,6 +20,7 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.21",
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",

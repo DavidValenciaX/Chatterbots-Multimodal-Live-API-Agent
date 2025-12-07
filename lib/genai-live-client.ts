@@ -1,11 +1,9 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 import {
   GoogleGenAI,
-  LiveCallbacks,
-  LiveClientToolResponse,
   LiveConnectConfig,
   LiveServerContent,
   LiveServerMessage,
@@ -13,6 +11,7 @@ import {
   LiveServerToolCallCancellation,
   Part,
   Session,
+  LiveClientToolResponse,
 } from '@google/genai';
 import EventEmitter from 'eventemitter3';
 import { DEFAULT_LIVE_API_MODEL } from './constants';
@@ -98,12 +97,6 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     }
 
     this._status = 'connecting';
-    const callbacks: LiveCallbacks = {
-      onopen: this.onOpen.bind(this),
-      onmessage: this.onMessage.bind(this),
-      onerror: this.onError.bind(this),
-      onclose: this.onClose.bind(this),
-    };
 
     try {
       this.session = await this.client.live.connect({
@@ -111,7 +104,12 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
         config: {
           ...config,
         },
-        callbacks,
+        callbacks: {
+          onopen: this.onOpen.bind(this),
+          onmessage: this.onMessage.bind(this),
+          onerror: this.onError.bind(this),
+          onclose: this.onClose.bind(this),
+        },
       });
     } catch (e) {
       console.error('Error connecting to GenAI Live:', e);
@@ -133,23 +131,42 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     return true;
   }
 
-  public send(parts: Part | Part[], turnComplete: boolean = true) {
+  public async send(parts: Part | Part[], turnComplete: boolean = true) {
     if (this._status !== 'connected' || !this.session) {
       this.emit('error', new ErrorEvent('Client is not connected'));
       return;
     }
-    this.session.sendClientContent({ turns: parts, turnComplete });
+    try {
+      await this.session.sendClientContent({ turns: Array.isArray(parts) ? parts : [parts], turnComplete });
+    } catch (e: any) {
+      if (e.message?.includes('CLOSING') || e.message?.includes('CLOSED')) {
+        this.disconnect();
+      } else {
+        console.error('send Error:', e);
+      }
+    }
     this.log(`client.send`, parts);
   }
 
-  public sendRealtimeInput(chunks: Array<{ mimeType: string; data: string }>) {
+  public async sendRealtimeInput(chunks: Array<{ mimeType: string; data: string }>) {
     if (this._status !== 'connected' || !this.session) {
-      this.emit('error', new ErrorEvent('Client is not connected'));
+      // Don't emit error aggressively here as it might be a race condition during close
+      // this.emit('error', new ErrorEvent('Client is not connected'));
       return;
     }
-    chunks.forEach(chunk => {
-      this.session!.sendRealtimeInput({ media: chunk });
-    });
+
+    for (const chunk of chunks) {
+      try {
+        await this.session.sendRealtimeInput({ media: chunk });
+      } catch (e: any) {
+        if (e.message?.includes('CLOSING') || e.message?.includes('CLOSED')) {
+          this.disconnect();
+          break; // Stop sending
+        } else {
+          console.error('sendRealtimeInput Error:', e);
+        }
+      }
+    }
 
     let hasAudio = false;
     let hasVideo = false;
@@ -167,7 +184,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     this.log(`client.realtimeInput`, message);
   }
 
-  public sendToolResponse(toolResponse: LiveClientToolResponse) {
+  public async sendToolResponse(toolResponse: LiveClientToolResponse) {
     if (this._status !== 'connected' || !this.session) {
       this.emit('error', new ErrorEvent('Client is not connected'));
       return;
@@ -176,9 +193,17 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
       toolResponse.functionResponses &&
       toolResponse.functionResponses.length
     ) {
-      this.session.sendToolResponse({
-        functionResponses: toolResponse.functionResponses!,
-      });
+      try {
+        await this.session.sendToolResponse({
+          functionResponses: toolResponse.functionResponses,
+        });
+      } catch (e: any) {
+        if (e.message?.includes('CLOSING') || e.message?.includes('CLOSED')) {
+          this.disconnect();
+        } else {
+          console.error('sendToolResponse Error:', e);
+        }
+      }
     }
 
     this.log(`client.toolResponse`, { toolResponse });
@@ -202,12 +227,12 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
 
     if (message.serverContent) {
       const { serverContent } = message;
-      if ('interrupted' in serverContent) {
+      if ('interrupted' in serverContent && serverContent.interrupted) {
         this.log('receive.serverContent', 'interrupted');
         this.emit('interrupted');
         return;
       }
-      if ('turnComplete' in serverContent) {
+      if ('turnComplete' in serverContent && serverContent.turnComplete) {
         this.log('server.send', 'turnComplete');
         this.emit('turncomplete');
       }
@@ -238,7 +263,8 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
         this.emit('content', content);
         this.log(`server.content`, message);
       } else {
-        console.log('received unmatched message', message);
+        // Handle other content types if necessary
+        // console.log('received unmatched message', message);
       }
     }
   }
