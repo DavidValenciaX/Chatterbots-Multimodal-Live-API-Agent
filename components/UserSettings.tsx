@@ -4,10 +4,12 @@
 */
 import Modal from './Modal';
 import { useUI, useUser } from '@/lib/state';
+import { useTranslation } from '@/lib/i18n';
 
 export default function UserSettings() {
   const { name, info, setName, setInfo } = useUser();
   const { setShowUserConfig } = useUI();
+  const { t } = useTranslation();
 
   function updateClient() {
     setShowUserConfig(false);
@@ -17,8 +19,7 @@ export default function UserSettings() {
     <Modal onClose={() => setShowUserConfig(false)}>
       <div className="userSettings">
         <p>
-          This is a simple tool that allows you to design, test, and banter with
-          custom AI characters on the fly.
+          {t('userSettingsTitle')}
         </p>
 
         <form
@@ -28,31 +29,31 @@ export default function UserSettings() {
             updateClient();
           }}
         >
-          <p>Adding this optional info makes the experience more fun:</p>
+          <p>{t('optionalInfo')}</p>
 
           <div>
-            <p>Your name</p>
+            <p>{t('yourName')}</p>
             <input
               type="text"
               name="name"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="What do you like to be called?"
+              placeholder={t('namePlaceholder')}
             />
           </div>
 
           <div>
-            <p>Your info</p>
+            <p>{t('yourInfo')}</p>
             <textarea
               rows={3}
               name="info"
               value={info}
               onChange={e => setInfo(e.target.value)}
-              placeholder="Things we should know about you… Likes, dislikes, hobbies, interests, favorite movies, books, tv shows, foods, etc."
+              placeholder={t('infoPlaceholder')}
             />
           </div>
 
-          <button className="button primary">Let’s go!</button>
+          <button className="button primary">{t('letsGo')}</button>
         </form>
       </div>
     </Modal>

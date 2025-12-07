@@ -4,6 +4,7 @@
 */
 import { useLiveAPIContext } from '@/contexts/LiveAPIContext';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ExtendedErrorType {
   code?: number;
@@ -14,6 +15,7 @@ export interface ExtendedErrorType {
 export default function ErrorScreen() {
   const { client } = useLiveAPIContext();
   const [error, setError] = useState<{ message?: string } | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     function onError(error: ErrorEvent) {
@@ -28,10 +30,9 @@ export default function ErrorScreen() {
     };
   }, [client]);
 
-  const quotaErrorMessage =
-    'Gemini Live API in AI Studio has a limited free quota each day. Come back tomorrow to continue.';
+  const quotaErrorMessage = t('errorQuota');
 
-  let errorMessage = 'Something went wrong. Please try again.';
+  let errorMessage = t('errorGeneric');
   let rawMessage: string | null = error?.message || null;
   let tryAgainOption = true;
   if (error?.message?.includes('RESOURCE_EXHAUSTED')) {
@@ -70,7 +71,7 @@ export default function ErrorScreen() {
             setError(null);
           }}
         >
-          Close
+          {t('close')}
         </button>
       ) : null}
       {rawMessage ? (

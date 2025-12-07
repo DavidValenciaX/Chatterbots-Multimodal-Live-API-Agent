@@ -12,12 +12,14 @@ import {
 import Modal from './Modal';
 import c from 'classnames';
 import { useAgent, useUI } from '@/lib/state';
+import { useTranslation } from '@/lib/i18n';
 
 export default function EditAgent() {
   const agent = useAgent(state => state.current);
   const updateAgent = useAgent(state => state.update);
   const nameInput = useRef(null);
   const { setShowAgentEdit } = useUI();
+  const { t } = useTranslation();
 
   function onClose() {
     setShowAgentEdit(false);
@@ -36,7 +38,7 @@ export default function EditAgent() {
               <input
                 className="largeInput"
                 type="text"
-                placeholder="Name"
+                placeholder={t('name')}
                 value={agent.name}
                 onChange={e => updateCurrentAgent({ name: e.target.value })}
                 ref={nameInput}
@@ -45,14 +47,14 @@ export default function EditAgent() {
 
             <div>
               <label>
-                Personality
+                {t('personality')}
                 <textarea
                   value={agent.personality}
                   onChange={e =>
                     updateCurrentAgent({ personality: e.target.value })
                   }
                   rows={7}
-                  placeholder="How should I act? Whatʼs my purpose? How would you describe my personality?"
+                  placeholder={t('personalityPlaceholder')}
                 />
               </label>
             </div>
@@ -76,7 +78,7 @@ export default function EditAgent() {
             </ul>
           </div>
           <div className="voicePicker">
-            Voice
+            {t('voice')}
             <select
               value={agent.voice}
               onChange={e => {
@@ -94,7 +96,7 @@ export default function EditAgent() {
           </div>
         </div>
         <button onClick={() => onClose()} className="button primary">
-          Let’s go!
+          {t('letsGo')}
         </button>
       </div>
     </Modal>

@@ -5,6 +5,7 @@
 import { useLiveAPIContext } from '@/contexts/LiveAPIContext';
 import { Agent, createNewAgent } from '@/lib/presets/agents';
 import { useAgent, useUI, useUser } from '@/lib/state';
+import { useTranslation } from '@/lib/i18n';
 import c from 'classnames';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +15,7 @@ export default function Header() {
   const { current, setCurrent, availablePresets, availablePersonal, addAgent } =
     useAgent();
   const { disconnect } = useLiveAPIContext();
+  const { t, language, setLanguage } = useTranslation();
 
   let [showRoomList, setShowRoomList] = useState(false);
 
@@ -53,13 +55,13 @@ export default function Header() {
             onClick={() => setShowAgentEdit(true)}
             className="button createButton"
           >
-            <span className="icon">edit</span> Edit
+            <span className="icon">edit</span> {t('edit')}
           </button>
         </div>
 
         <div className={c('roomList', { active: showRoomList })}>
           <div>
-            <h3>Presets</h3>
+            <h3>{t('presets')}</h3>
             <ul>
               {availablePresets
                 .filter(agent => agent.id !== current.id)
@@ -77,7 +79,7 @@ export default function Header() {
           </div>
 
           <div>
-            <h3>Your ChatterBots</h3>
+            <h3>{t('yourChatterBots')}</h3>
             {
               <ul>
                 {availablePersonal.length ? (
@@ -87,7 +89,7 @@ export default function Header() {
                     </li>
                   ))
                 ) : (
-                  <p>None yet.</p>
+                  <p>{t('noneYet')}</p>
                 )}
               </ul>
             }
@@ -97,18 +99,28 @@ export default function Header() {
                 addNewChatterBot();
               }}
             >
-              <span className="icon">add</span>New ChatterBot
+              <span className="icon">add</span>{t('newChatterBot')}
             </button>
           </div>
         </div>
       </div>
-      <button
-        className="userSettingsButton"
-        onClick={() => setShowUserConfig(!showUserConfig)}
-      >
-        <p className='user-name'>{name || 'Your name'}</p>
-        <span className="icon">tune</span>
-      </button>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button
+          className="button"
+          onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
+          style={{ padding: '0 8px', height: '32px', minWidth: 'auto' }}
+        >
+          {language.toUpperCase()}
+        </button>
+        <button
+          className="userSettingsButton"
+          onClick={() => setShowUserConfig(!showUserConfig)}
+        >
+          <p className='user-name'>{name || t('yourName')}</p>
+          <span className="icon">tune</span>
+        </button>
+      </div>
     </header>
   );
 }

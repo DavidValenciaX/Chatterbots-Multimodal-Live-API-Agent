@@ -25,6 +25,7 @@ import { AudioRecorder } from '../../../lib/audio-recorder';
 
 import { useLiveAPIContext } from '../../../contexts/LiveAPIContext';
 import { useUI } from '@/lib/state';
+import { useTranslation } from '@/lib/i18n';
 
 export type ControlTrayProps = {
   readonly children?: ReactNode;
@@ -37,6 +38,7 @@ function ControlTray({ children }: ControlTrayProps) {
 
   const { showAgentEdit, showUserConfig } = useUI();
   const { client, connected, connect, disconnect } = useLiveAPIContext();
+  const { t } = useTranslation();
 
   // Stop the current agent if the user is editing the agent or user config
   useEffect(() => {
@@ -98,7 +100,7 @@ function ControlTray({ children }: ControlTrayProps) {
             </span>
           </button>
         </div>
-        <span className="text-indicator">Streaming</span>
+        <span className="text-indicator">{t('streaming')}</span>
       </div>
     </section>
   );
