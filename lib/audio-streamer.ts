@@ -39,12 +39,17 @@ export class AudioStreamer {
   public source: AudioBufferSourceNode;
   private endOfQueueAudioSource: AudioBufferSourceNode | null = null;
 
-  public onComplete = () => {};
+  public onComplete = () => { };
+  public analyser: AnalyserNode;
 
   constructor(public context: AudioContext) {
+    this.analyser = this.context.createAnalyser();
+    this.analyser.fftSize = 512;
+    this.analyser.smoothingTimeConstant = 0.1;
     this.gainNode = this.context.createGain();
     this.source = this.context.createBufferSource();
-    this.gainNode.connect(this.context.destination);
+    this.gainNode.connect(this.analyser);
+    this.analyser.connect(this.context.destination);
     this.addPCM16 = this.addPCM16.bind(this);
   }
 
@@ -171,7 +176,7 @@ export class AudioStreamer {
       const worklets = registeredWorklets.get(this.context);
 
       if (worklets) {
-        Object.entries(worklets).forEach(([workletName, graph]) => {
+        Object.entries(worklets).forEach(([_, graph]) => {
           const { node, handlers } = graph;
           if (node) {
             source.connect(node);
@@ -235,7 +240,7 @@ export class AudioStreamer {
     setTimeout(() => {
       this.gainNode.disconnect();
       this.gainNode = this.context.createGain();
-      this.gainNode.connect(this.context.destination);
+      this.gainNode.connect(this.analyser);
     }, 200);
   }
 

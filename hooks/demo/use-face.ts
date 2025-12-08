@@ -88,8 +88,71 @@ export function useBlink({ speed }: BlinkProps) {
 }
 
 export default function useFace() {
-  const { volume } = useLiveAPIContext();
+  const { audioStreamer } = useLiveAPIContext();
   const eyeScale = useBlink({ speed: 0.0125 });
+  const [mouthShape, setMouthShape] = useState({
+    open: 0,
+    spread: 0,
+    round: 0,
+  });
 
-  return { eyeScale, mouthScale: volume / 2 };
+  useEffect(() => {
+    if (!audioStreamer) return;
+
+    const analyser = audioStreamer.analyser;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    let animationFrameId: number;
+
+    const analyze = () => {
+      animationFrameId = requestAnimationFrame(analyze);
+      analyser.getByteFrequencyData(dataArray);
+
+      // Calculate energy in frequency bands
+      // FFT size 512 -> 256 bins. Sample rate ~24kHz.
+      // Resolution approx 46Hz per bin.
+
+      let lowEnergy = 0; // ~0-500Hz (Bins 0-10)
+      let midEnergy = 0; // ~500-2500Hz (Bins 11-54)
+      let highEnergy = 0; // ~2500Hz+ (Bins 55-255)
+
+      for (let i = 0; i < bufferLength; i++) {
+        const val = dataArray[i] / 255.0;
+        if (i < 10) lowEnergy += val;
+        else if (i < 55) midEnergy += val;
+        else highEnergy += val;
+      }
+
+      // Normalize roughly by bin count width
+      lowEnergy /= 10;
+      midEnergy /= 45;
+      highEnergy /= 200;
+
+      // Map to specific shapes
+      // Simple heuristic:
+      // Open (Jaw drop): Driven by volume (overall) and low frequencies
+      // Spread (E/S): Driven by high frequencies
+      // Round (O/U): Driven by mid-low dominance without high
+
+      // Amplify for visual effect
+      const gain = 2.5;
+      lowEnergy = Math.min(1, lowEnergy * gain);
+      midEnergy = Math.min(1, midEnergy * gain);
+      highEnergy = Math.min(1, highEnergy * gain);
+
+      setMouthShape({
+        open: lowEnergy * 0.8 + midEnergy * 0.2, // Open mainly on bass
+        spread: highEnergy * 1.5, // Spread on treble (sibilance)
+        round: (midEnergy > highEnergy * 1.5 ? midEnergy : 0) * 0.5, // Round if mid is dominant
+      });
+    };
+
+    analyze();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [audioStreamer]);
+
+  return { eyeScale, mouthShape };
 }

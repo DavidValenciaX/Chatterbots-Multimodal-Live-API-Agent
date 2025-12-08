@@ -42,7 +42,7 @@ export default function BasicFace({
   const [scale, setScale] = useState(0.1);
 
   // Face state
-  const { eyeScale, mouthScale } = useFace();
+  const { eyeScale, mouthShape } = useFace();
   const hoverPosition = useHover();
   const tiltAngle = useTilt({
     maxAngle: 5,
@@ -76,8 +76,8 @@ export default function BasicFace({
   // Render the face on the canvas
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d')!;
-    renderBasicFace({ ctx, mouthScale, eyeScale, color });
-  }, [canvasRef, volume, eyeScale, mouthScale, color, scale]);
+    renderBasicFace({ ctx, mouthShape, eyeScale, color });
+  }, [canvasRef, volume, eyeScale, mouthShape, color, scale]);
 
   return (
     <canvas

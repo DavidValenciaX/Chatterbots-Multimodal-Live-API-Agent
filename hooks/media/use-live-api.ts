@@ -36,6 +36,7 @@ export type UseLiveApiResults = {
   connected: boolean;
 
   volume: number;
+  audioStreamer: AudioStreamer | null;
 };
 
 export function useLiveApi({
@@ -52,6 +53,7 @@ export function useLiveApi({
   const [volume, setVolume] = useState(0);
   const [connected, setConnected] = useState(false);
   const [config, setConfig] = useState<LiveConnectConfig>({});
+  const [audioStreamer, setAudioStreamer] = useState<AudioStreamer | null>(null);
 
   // register audio for streaming server -> speakers
   useEffect(() => {
@@ -68,6 +70,7 @@ export function useLiveApi({
           .catch(err => {
             console.error('Error adding worklet:', err);
           });
+        setAudioStreamer(audioStreamerRef.current);
       });
     }
   }, [audioStreamerRef]);
@@ -129,5 +132,6 @@ export function useLiveApi({
     connected,
     disconnect,
     volume,
+    audioStreamer,
   };
 }
