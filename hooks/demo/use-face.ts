@@ -12,30 +12,6 @@ export type FaceResults = {
   mouthScale: number;
 };
 
-/*
-function easeInOutCubic(x: number): number {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2
-}
-
-function easeOutExpo(x: number): number {
-  return x === 1 ? 1 : 1 - Math.pow(2, -10 * x)
-}
-
-function easeInOutExpo(x: number): number {
-  return x === 0
-    ? 0
-    : x === 1
-    ? 1
-    : x < 0.5
-    ? Math.pow(2, 20 * x - 10) / 2
-    : (2 - Math.pow(2, -20 * x + 10)) / 2
-}
-
-function easeOutCirc(x: number): number {
-  return Math.sqrt(1 - Math.pow(x - 1, 2))
-}
-*/
-
 function easeOutQuint(x: number): number {
   return 1 - Math.pow(1 - x, 5);
 }
@@ -50,7 +26,7 @@ function clamp(x: number, lowerlimit: number, upperlimit: number) {
 // GLSL smoothstep implementation
 function smoothstep(edge0: number, edge1: number, x: number) {
   // Scale, bias, and saturate to range [0,1]
-  x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+  x = clamp((x - edge0) / (edge1 - edge0), 0, 1);
   // Apply cubic polynomial smoothing
   return x * x * (3 - 2 * x);
 }
