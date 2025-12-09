@@ -67,11 +67,10 @@ export default function EditAgent() {
               {AGENT_COLORS.map((color, i) => (
                 <li
                   key={i}
-                  className={c({ active: color === agent.bodyColor })}
+                  className={c(`color-swatch-${i}`, { active: color === agent.bodyColor })}
                 >
                   <button
                     type="button"
-                    style={{ backgroundColor: color }}
                     aria-label={`${t('selectColor')} ${color}`}
                     onClick={() => updateCurrentAgent({ bodyColor: color })}
                   />
