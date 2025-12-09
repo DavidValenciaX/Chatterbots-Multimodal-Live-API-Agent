@@ -942,6 +942,26 @@ input[type='range'] {
   font-size: 24px;
 }
 
+.error-screen--hidden {
+  display: none;
+}
+
+.error-screen .error-emoji {
+  font-size: 48px;
+}
+
+.error-screen .error-message-container {
+  font-size: 22px;
+  line-height: 1.2;
+  opacity: 0.5;
+}
+
+.error-screen .error-raw-message-container {
+  font-size: 15px;
+  line-height: 1.2;
+  opacity: 0.4;
+}
+
 .basic-face {
   display: block;
   border-radius: 50%;
