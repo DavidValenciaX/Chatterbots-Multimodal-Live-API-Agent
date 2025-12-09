@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import { useLiveAPIContext } from '@/contexts/LiveAPIContext';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 
 export interface ExtendedErrorType {
