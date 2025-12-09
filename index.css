@@ -941,3 +941,9 @@ input[type='range'] {
   color: white;
   font-size: 24px;
 }
+
+.basic-face {
+  display: block;
+  border-radius: 50%;
+  transform: translateY(var(--hover-position, 0px)) rotate(var(--tilt-angle, 0deg));
+}

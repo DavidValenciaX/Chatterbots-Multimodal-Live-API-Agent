@@ -79,17 +79,20 @@ export default function BasicFace({
     renderBasicFace({ ctx, mouthShape, eyeScale, color });
   }, [canvasRef, volume, eyeScale, mouthShape, color, scale]);
 
+  // Update CSS custom properties for dynamic transform values
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.style.setProperty('--hover-position', `${hoverPosition}px`);
+      canvasRef.current.style.setProperty('--tilt-angle', `${tiltAngle}deg`);
+    }
+  }, [canvasRef, hoverPosition, tiltAngle]);
+
   return (
     <canvas
       className="basic-face"
       ref={canvasRef}
       width={radius * 2 * scale}
       height={radius * 2 * scale}
-      style={{
-        display: 'block',
-        borderRadius: '50%',
-        transform: `translateY(${hoverPosition}px) rotate(${tiltAngle}deg)`,
-      }}
     />
   );
 }
