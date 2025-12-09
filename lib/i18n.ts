@@ -36,6 +36,7 @@ export const translations: Translations = {
         personalityPlaceholder:
             'How should I act? Whatʼs my purpose? How would you describe my personality?',
         voice: 'Voice',
+        selectColor: 'Select color',
         // ControlTray
         streaming: 'Streaming',
         // ErrorScreen
@@ -67,6 +68,7 @@ export const translations: Translations = {
         personalityPlaceholder:
             '¿Cómo debo actuar? ¿Cuál es mi propósito? ¿Cómo describirías mi personalidad?',
         voice: 'Voz',
+        selectColor: 'Seleccionar color',
         // ControlTray
         streaming: 'Transmitiendo',
         // ErrorScreen

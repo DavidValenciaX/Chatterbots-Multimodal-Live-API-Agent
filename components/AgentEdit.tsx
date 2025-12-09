@@ -70,7 +70,9 @@ export default function EditAgent() {
                   className={c({ active: color === agent.bodyColor })}
                 >
                   <button
+                    type="button"
                     style={{ backgroundColor: color }}
+                    aria-label={`${t('selectColor')} ${color}`}
                     onClick={() => updateCurrentAgent({ bodyColor: color })}
                   />
                 </li>
@@ -78,8 +80,9 @@ export default function EditAgent() {
             </ul>
           </div>
           <div className="voicePicker">
-            {t('voice')}
+            <label htmlFor="voice-select">{t('voice')}</label>
             <select
+              id="voice-select"
               value={agent.voice}
               onChange={e => {
                 updateCurrentAgent({
