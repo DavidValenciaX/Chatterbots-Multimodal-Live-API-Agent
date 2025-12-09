@@ -87,14 +87,22 @@ export function useBlink({ speed }: BlinkProps) {
   return eyeScale;
 }
 
+// Helper for linear interpolation smoothing
+const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor;
+
 export default function useFace() {
   const { audioStreamer } = useLiveAPIContext();
   const eyeScale = useBlink({ speed: 0.0125 });
+
+  // State for smoothed values to prevent jitter
   const [mouthShape, setMouthShape] = useState({
     open: 0,
     spread: 0,
     round: 0,
   });
+
+  // Refs for smoothing
+  const currentShape = useRef({ open: 0, spread: 0, round: 0 });
 
   useEffect(() => {
     if (!audioStreamer) return;
@@ -108,42 +116,66 @@ export default function useFace() {
       animationFrameId = requestAnimationFrame(analyze);
       analyser.getByteFrequencyData(dataArray);
 
-      // Calculate energy in frequency bands
-      // FFT size 512 -> 256 bins. Sample rate ~24kHz.
-      // Resolution approx 46Hz per bin.
+      // Wawa-Lipsync inspired logic
+      // We look for energy in specific formant bands to detect phonemes
 
-      let lowEnergy = 0; // ~0-500Hz (Bins 0-10)
-      let midEnergy = 0; // ~500-2500Hz (Bins 11-54)
-      let highEnergy = 0; // ~2500Hz+ (Bins 55-255)
+      // Frequency resolution: 24000Hz / 512 = ~46.8Hz per bin
 
-      for (let i = 0; i < bufferLength; i++) {
+      let bass = 0;   // ~60-500Hz (Fundamental voice pitch)
+      let mids = 0;   // ~500-2500Hz (Vowel formants)
+      let highs = 0;  // ~2500Hz+ (Consonants, sibilance)
+
+      // Range summation (approximate bins)
+      for (let i = 1; i < bufferLength; i++) {
         const val = dataArray[i] / 255.0;
-        if (i < 10) lowEnergy += val;
-        else if (i < 55) midEnergy += val;
-        else highEnergy += val;
+        if (i <= 10) bass += val;      // ~450Hz
+        else if (i <= 54) mids += val; // ~2500Hz
+        else highs += val;             // >2500Hz
       }
 
-      // Normalize roughly by bin count width
-      lowEnergy /= 10;
-      midEnergy /= 45;
-      highEnergy /= 200;
+      // Averaging
+      bass /= 10;
+      mids /= 44;
+      highs /= (bufferLength - 55);
 
-      // Map to specific shapes
-      // Simple heuristic:
-      // Open (Jaw drop): Driven by volume (overall) and low frequencies
-      // Spread (E/S): Driven by high frequencies
-      // Round (O/U): Driven by mid-low dominance without high
+      // Noise gate / Threshold
+      const threshold = 0.05;
+      if (bass < threshold) bass = 0;
+      if (mids < threshold) mids = 0;
+      if (highs < threshold) highs = 0;
 
-      // Amplify for visual effect
-      const gain = 2.5;
-      lowEnergy = Math.min(1, lowEnergy * gain);
-      midEnergy = Math.min(1, midEnergy * gain);
-      highEnergy = Math.min(1, highEnergy * gain);
+      // --- Shape Logic ---
+
+      // 1. Openness (Jaw)
+      // Driven primarily by volume (bass/mids)
+      // "A" sound has high mid energy.
+      // Reduced multiplier to prevent exaggerated opening
+      const targetOpen = Math.min(1.0, (bass * 0.5 + mids) * 0.5);
+
+      // 2. Spread (Width)
+      // Driven by high frequencies (S, F, T)
+      // Also slightly by "E" vowel which has high formants
+      const targetSpread = Math.min(1.0, (highs * 4));
+
+      // 3. Roundness (Pucker)
+      // Driven by strong mids but LOW highs ("O", "U")
+      // If we have high mids but low treble, it's likely a round vowel.
+      // We subtract spread influence because you can't be spread and round.
+      const targetRound = Math.min(1.0, (mids * 2.5) * (1 - highs * 2));
+
+      // --- Smoothing ---
+      // Use linear interpolation to smooth transitions (attack/decay)
+      // Reduced factor for smoother transitions (0.15)
+      const smoothFactor = 0.15; // 0.1 = slow/smooth, 0.9 = fast/jittery
+
+      currentShape.current.open = lerp(currentShape.current.open, targetOpen, smoothFactor);
+      currentShape.current.spread = lerp(currentShape.current.spread, targetSpread, smoothFactor);
+      currentShape.current.round = lerp(currentShape.current.round, Math.max(0, targetRound), smoothFactor);
 
       setMouthShape({
-        open: lowEnergy * 0.8 + midEnergy * 0.2, // Open mainly on bass
-        spread: highEnergy * 1.5, // Spread on treble (sibilance)
-        round: (midEnergy > highEnergy * 1.5 ? midEnergy : 0) * 0.5, // Round if mid is dominant
+        open: currentShape.current.open,
+        spread: currentShape.current.spread,
+        round: currentShape.current.round,
       });
     };
 
