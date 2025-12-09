@@ -127,7 +127,7 @@ export default function useFace() {
 
       // Range summation (approximate bins)
       for (let i = 1; i < bufferLength; i++) {
-        const val = dataArray[i] / 255.0;
+        const val = dataArray[i] / 255;
         if (i <= 10) bass += val;      // ~450Hz
         else if (i <= 54) mids += val; // ~2500Hz
         else highs += val;             // >2500Hz
@@ -150,18 +150,18 @@ export default function useFace() {
       // Driven primarily by volume (bass/mids)
       // "A" sound has high mid energy.
       // Reduced multiplier to prevent exaggerated opening
-      const targetOpen = Math.min(1.0, (bass * 0.5 + mids) * 0.5);
+      const targetOpen = Math.min(1, (bass * 0.5 + mids) * 0.5);
 
       // 2. Spread (Width)
       // Driven by high frequencies (S, F, T)
       // Also slightly by "E" vowel which has high formants
-      const targetSpread = Math.min(1.0, (highs * 4));
+      const targetSpread = Math.min(1, (highs * 4));
 
       // 3. Roundness (Pucker)
       // Driven by strong mids but LOW highs ("O", "U")
       // If we have high mids but low treble, it's likely a round vowel.
       // We subtract spread influence because you can't be spread and round.
-      const targetRound = Math.min(1.0, (mids * 2.5) * (1 - highs * 2));
+      const targetRound = Math.min(1, (mids * 2.5) * (1 - highs * 2));
 
       // --- Smoothing ---
       // Use linear interpolation to smooth transitions (attack/decay)
