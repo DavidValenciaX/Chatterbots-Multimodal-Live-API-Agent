@@ -32,8 +32,6 @@ code {
   --accent-red: #ff4600;
   --background: var(--gray-900);
   --color: var(--text);
-  scrollbar-color: var(--gray-600) var(--gray-900);
-  scrollbar-width: thin;
   --font-family: 'google sans' 'Space Mono', monospace;
   /* Colors */
   --Neutral-00: #000;
