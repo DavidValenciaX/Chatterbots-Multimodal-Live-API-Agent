@@ -43,7 +43,7 @@ export function useBlink({ speed }: BlinkProps) {
 
   useEffect(() => {
     function nextFrame() {
-      frameId.current = window.requestAnimationFrame(() => {
+      frameId.current = globalThis.requestAnimationFrame(() => {
         setFrame(frame + 1);
         let s = easeOutQuint((Math.sin(frame * speed) + 1) * 2);
         s = smoothstep(0.1, 0.25, s);
@@ -56,7 +56,7 @@ export function useBlink({ speed }: BlinkProps) {
     nextFrame();
 
     return () => {
-      window.cancelAnimationFrame(frameId.current);
+      globalThis.cancelAnimationFrame(frameId.current);
     };
   }, [speed, eyeScale, frame]);
 

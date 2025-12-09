@@ -1,11 +1,8 @@
 body {
   margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Google Sans Display', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Google Sans Display', sans-serif;
   background: var(--Neutral-00);
 }
 
@@ -173,7 +170,7 @@ button .icon {
 }
 
 .icon {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined', sans-serif;
   font-weight: 300;
   line-height: 1;
 }
@@ -331,7 +328,6 @@ header:hover .createButton {
   border: 1px solid rgba(0, 0, 0, 0);
   -webkit-user-select: none;
   user-select: none;
-  cursor: pointer;
 }
 .action-button:focus {
   border: 2px solid var(--Neutral-20);
@@ -848,7 +844,6 @@ input[type='range'] {
 
 .createButton {
   transition: opacity 0.3s;
-  /* margin-left: 10px; */
   background: var(--Blue-500);
 }
 
