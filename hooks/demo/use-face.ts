@@ -1,9 +1,37 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 import { useEffect, useRef, useState } from 'react';
 import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
+
+/**
+ * Viseme types based on Rhubarb Lip Sync / Preston Blair standard
+ * 
+ * A: Closed mouth for M, B, P sounds - slight pressure between lips
+ * B: Slightly open, teeth together for K, S, T, and EE sounds  
+ * C: Open mouth for EH, AE vowels - medium opening
+ * D: Wide open mouth for AA vowel (as in "father")
+ * E: Rounded/oval mouth for AO, ER sounds
+ * F: Puckered lips for OO, UW, W sounds
+ * G: Upper teeth on lower lip for F, V sounds
+ * H: Tongue visible for L sound
+ * X: Neutral/idle closed mouth for silence
+ */
+export type Viseme = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'X';
+
+export type MouthShape = {
+  /** Current viseme being displayed */
+  viseme: Viseme;
+  /** Intensity/weight of the current viseme (0-1) for smooth blending */
+  intensity: number;
+  /** Raw openness value for fine-tuning */
+  open: number;
+  /** Raw spread value for fine-tuning */
+  spread: number;
+  /** Raw roundness value for fine-tuning */
+  round: number;
+};
 
 export type FaceResults = {
   /** A value that represents how open the eyes are. */
@@ -66,12 +94,91 @@ export function useBlink({ speed }: BlinkProps) {
 // Helper for linear interpolation smoothing
 const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor;
 
+/**
+ * Determines the appropriate viseme based on audio frequency analysis
+ * Uses formant analysis to approximate phoneme categories
+ */
+function determineViseme(
+  bass: number,
+  mids: number,
+  highs: number,
+  open: number,
+  spread: number,
+  round: number
+): Viseme {
+  // Calculate total energy to detect silence
+  const totalEnergy = bass + mids + highs;
+
+  // X: Silence / Idle - very low or no audio
+  if (totalEnergy < 0.08) {
+    return 'X';
+  }
+
+  // Calculate ratios for better phoneme detection
+  const bassToMidRatio = mids > 0.01 ? bass / mids : bass * 10;
+
+  // G: F, V sounds - high frequency sibilance with moderate mids
+  // These sounds have friction noise in high frequencies
+  if (highs > 0.25 && spread > 0.4 && open < 0.3) {
+    return 'G';
+  }
+
+  // B: S, T, K, EE sounds - high frequency with teeth together
+  // Strong high frequencies, moderate spread, low opening
+  if (highs > 0.2 && spread > 0.3 && open < 0.4) {
+    return 'B';
+  }
+
+  // A: M, B, P sounds - closed mouth with nasal/bilabial
+  // Strong bass (nasal resonance), low mids and highs
+  if (bass > 0.15 && open < 0.15 && mids < 0.2) {
+    return 'A';
+  }
+
+  // F: OO, UW, W sounds - puckered/rounded lips
+  // Strong roundness, moderate opening, low spread
+  if (round > 0.5 && spread < 0.2) {
+    return 'F';
+  }
+
+  // E: AO, ER sounds - rounded but more open than F
+  // Moderate roundness and opening
+  if (round > 0.3 && open > 0.2 && open < 0.6 && spread < 0.3) {
+    return 'E';
+  }
+
+  // D: AA sound (as in "father") - wide open mouth
+  // Very high opening, strong mids (vowel formants)
+  if (open > 0.6 && mids > 0.3) {
+    return 'D';
+  }
+
+  // C: EH, AE sounds - medium open mouth
+  // Moderate opening and mids
+  if (open > 0.3 && open <= 0.6 && mids > 0.15) {
+    return 'C';
+  }
+
+  // H: L sound - tongue visible (we approximate this)
+  // L has specific formant pattern with moderate everything
+  if (mids > 0.2 && bassToMidRatio > 0.8 && bassToMidRatio < 1.2 && open > 0.2 && open < 0.4) {
+    return 'H';
+  }
+
+  // Default fallback based on opening level
+  if (open > 0.4) return 'C';
+  if (open > 0.15) return 'B';
+  return 'X';
+}
+
 export default function useFace() {
   const { audioStreamer } = useLiveAPIContext();
   const eyeScale = useBlink({ speed: 0.0125 });
 
-  // State for smoothed values to prevent jitter
-  const [mouthShape, setMouthShape] = useState({
+  // State for mouth shape with viseme
+  const [mouthShape, setMouthShape] = useState<MouthShape>({
+    viseme: 'X',
+    intensity: 0,
     open: 0,
     spread: 0,
     round: 0,
@@ -79,6 +186,8 @@ export default function useFace() {
 
   // Refs for smoothing
   const currentShape = useRef({ open: 0, spread: 0, round: 0 });
+  const currentViseme = useRef<Viseme>('X');
+  const visemeHoldTime = useRef(0);
 
   useEffect(() => {
     if (!audioStreamer) return;
@@ -87,16 +196,18 @@ export default function useFace() {
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     let animationFrameId: number;
+    let lastTime = performance.now();
 
     const analyze = () => {
       animationFrameId = requestAnimationFrame(analyze);
+
+      const currentTime = performance.now();
+      const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+      lastTime = currentTime;
+
       analyser.getByteFrequencyData(dataArray);
 
-      // Wawa-Lipsync inspired logic
-      // We look for energy in specific formant bands to detect phonemes
-
       // Frequency resolution: 24000Hz / 512 = ~46.8Hz per bin
-
       let bass = 0;   // ~60-500Hz (Fundamental voice pitch)
       let mids = 0;   // ~500-2500Hz (Vowel formants)
       let highs = 0;  // ~2500Hz+ (Consonants, sibilance)
@@ -122,33 +233,55 @@ export default function useFace() {
 
       // --- Shape Logic ---
 
-      // 1. Openness (Jaw)
-      // Driven primarily by volume (bass/mids)
-      // "A" sound has high mid energy.
-      // Reduced multiplier to prevent exaggerated opening
-      const targetOpen = Math.min(1, (bass * 0.5 + mids) * 0.5);
+      // 1. Openness (Jaw) - adjusted for better sensitivity
+      const targetOpen = Math.min(1, (bass * 0.6 + mids * 1.2) * 0.6);
 
-      // 2. Spread (Width)
-      // Driven by high frequencies (S, F, T)
-      // Also slightly by "E" vowel which has high formants
-      const targetSpread = Math.min(1, (highs * 4));
+      // 2. Spread (Width) - for consonants and EE sounds
+      const targetSpread = Math.min(1, highs * 3.5);
 
-      // 3. Roundness (Pucker)
-      // Driven by strong mids but LOW highs ("O", "U")
-      // If we have high mids but low treble, it's likely a round vowel.
-      // We subtract spread influence because you can't be spread and round.
-      const targetRound = Math.min(1, (mids * 2.5) * (1 - highs * 2));
+      // 3. Roundness (Pucker) - for O, U sounds
+      const targetRound = Math.min(1, Math.max(0, (mids * 2.0) * (1 - highs * 3)));
 
-      // --- Smoothing ---
-      // Use linear interpolation to smooth transitions (attack/decay)
-      // Reduced factor for smoother transitions (0.15)
-      const smoothFactor = 0.15; // 0.1 = slow/smooth, 0.9 = fast/jittery
+      // --- Smoothing with different attack/decay ---
+      // Faster attack (opening), slower decay (closing) for natural movement
+      const attackFactor = 0.25;
+      const decayFactor = 0.12;
 
-      currentShape.current.open = lerp(currentShape.current.open, targetOpen, smoothFactor);
-      currentShape.current.spread = lerp(currentShape.current.spread, targetSpread, smoothFactor);
-      currentShape.current.round = lerp(currentShape.current.round, Math.max(0, targetRound), smoothFactor);
+      const openFactor = targetOpen > currentShape.current.open ? attackFactor : decayFactor;
+      const spreadFactor = targetSpread > currentShape.current.spread ? attackFactor : decayFactor;
+      const roundFactor = targetRound > currentShape.current.round ? attackFactor : decayFactor;
+
+      currentShape.current.open = lerp(currentShape.current.open, targetOpen, openFactor);
+      currentShape.current.spread = lerp(currentShape.current.spread, targetSpread, spreadFactor);
+      currentShape.current.round = lerp(currentShape.current.round, targetRound, roundFactor);
+
+      // Determine viseme based on current audio characteristics
+      const newViseme = determineViseme(
+        bass,
+        mids,
+        highs,
+        currentShape.current.open,
+        currentShape.current.spread,
+        currentShape.current.round
+      );
+
+      // Viseme hold logic - prevent too rapid switching
+      // Hold a viseme for at least 50ms before switching
+      const MIN_VISEME_HOLD = 0.05; // 50ms
+      visemeHoldTime.current += deltaTime;
+
+      if (newViseme !== currentViseme.current && visemeHoldTime.current >= MIN_VISEME_HOLD) {
+        currentViseme.current = newViseme;
+        visemeHoldTime.current = 0;
+      }
+
+      // Calculate intensity based on total energy
+      const totalEnergy = bass + mids + highs;
+      const intensity = Math.min(1, totalEnergy * 2);
 
       setMouthShape({
+        viseme: currentViseme.current,
+        intensity,
         open: currentShape.current.open,
         spread: currentShape.current.spread,
         round: currentShape.current.round,
