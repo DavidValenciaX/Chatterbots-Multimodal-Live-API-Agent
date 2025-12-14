@@ -1,10 +1,11 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 import { RefObject, useEffect, useState, useRef } from 'react';
 
-import { renderBasicFace } from './basic-face-render';
+import { renderFaceBackground } from './basic-face-render';
+import MouthSprite from './MouthSprite';
 
 import useFace from '../../../hooks/demo/use-face';
 import useHover from '../../../hooks/demo/use-hover';
@@ -32,6 +33,7 @@ export default function BasicFace({
   color,
 }: BasicFaceProps) {
   const timeoutRef = useRef<NodeJS.Timeout>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Audio output volume
   const { volume } = useLiveAPIContext();
@@ -73,26 +75,60 @@ export default function BasicFace({
     }
   }, [volume]);
 
-  // Render the face on the canvas
+  // Render the face background and eyes on the canvas (no mouth)
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d')!;
-    renderBasicFace({ ctx, mouthShape, eyeScale, color });
-  }, [canvasRef, volume, eyeScale, mouthShape, color, scale]);
+    renderFaceBackground({ ctx, eyeScale, color });
+  }, [canvasRef, volume, eyeScale, color, scale]);
 
   // Update CSS custom properties for dynamic transform values
   useEffect(() => {
-    if (canvasRef.current) {
-      canvasRef.current.style.setProperty('--hover-position', `${hoverPosition}px`);
-      canvasRef.current.style.setProperty('--tilt-angle', `${tiltAngle}deg`);
+    if (containerRef.current) {
+      containerRef.current.style.setProperty('--hover-position', `${hoverPosition}px`);
+      containerRef.current.style.setProperty('--tilt-angle', `${tiltAngle}deg`);
     }
-  }, [canvasRef, hoverPosition, tiltAngle]);
+  }, [containerRef, hoverPosition, tiltAngle]);
+
+  const canvasSize = radius * 2 * scale;
+
+  // Calculate mouth position and size relative to face
+  const mouthWidth = canvasSize * 0.45; // Mouth width relative to face
+  const mouthLeft = (canvasSize - mouthWidth) / 2;
+  const mouthTop = canvasSize * 0.52; // Position mouth in lower half of face
 
   return (
-    <canvas
+    <div
+      ref={containerRef}
       className="basic-face"
-      ref={canvasRef}
-      width={radius * 2 * scale}
-      height={radius * 2 * scale}
-    />
+      style={{
+        position: 'relative',
+        width: canvasSize,
+        height: canvasSize,
+        transform: `translateX(var(--hover-position, 0)) rotate(var(--tilt-angle, 0deg))`,
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        width={canvasSize}
+        height={canvasSize}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+      />
+      <MouthSprite
+        viseme={mouthShape.wawaViseme}
+        style={{
+          position: 'absolute',
+          left: mouthLeft,
+          top: mouthTop,
+          width: mouthWidth,
+          height: 'auto',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
   );
 }
+

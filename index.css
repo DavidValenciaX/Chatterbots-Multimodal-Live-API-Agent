@@ -118,6 +118,7 @@ select {
 select:focus-visible {
   outline: none;
 }
+
 button {
   font-family: var(--font-family);
   background: none;
@@ -134,6 +135,7 @@ button {
   &.primary {
     background: #4285f4;
   }
+
   &.icon {
     font-size: 1.2em;
   }
@@ -227,7 +229,7 @@ header {
   z-index: 999;
 }
 
-header > * {
+header>* {
   pointer-events: auto;
 }
 
@@ -253,17 +255,21 @@ header:hover .createButton {
   height: 100vh;
   width: 100vw;
 }
+
 .streaming-console a,
 .streaming-console a:visited,
 .streaming-console a:active {
   color: var(--gray-300);
 }
+
 .streaming-console .disabled {
   pointer-events: none;
 }
-.streaming-console .disabled > * {
+
+.streaming-console .disabled>* {
   pointer-events: none;
 }
+
 .streaming-console main {
   position: relative;
   display: flex;
@@ -275,6 +281,7 @@ header:hover .createButton {
   max-width: 100%;
   overflow: hidden;
 }
+
 .streaming-console .main-app-area {
   display: flex;
   flex: 1;
@@ -283,6 +290,7 @@ header:hover .createButton {
   position: relative;
   width: 100%;
 }
+
 .streaming-console .function-call {
   position: absolute;
   top: 0;
@@ -295,14 +303,17 @@ header:hover .createButton {
   from {
     transform: translateY(0);
   }
+
   to {
     transform: translateY(-3.5px);
   }
 }
+
 @keyframes pulse {
   from {
     scale: 1 1;
   }
+
   to {
     scale: 1.2 1.2;
   }
@@ -327,25 +338,31 @@ header:hover .createButton {
   -webkit-user-select: none;
   user-select: none;
 }
+
 .action-button:focus {
   border: 2px solid var(--Neutral-20);
   outline: 2px solid var(--Neutral-80);
 }
+
 .action-button.outlined {
   background: var(--Neutral-2);
   border: 1px solid var(--Neutral-20);
 }
+
 .action-button .no-action {
   pointer-events: none;
 }
+
 .action-button:hover {
   background: rgba(0, 0, 0, 0);
   border: 1px solid var(--Neutral-20);
 }
+
 .action-button.connected {
   background: var(--Blue-800);
   color: var(--Blue-500);
 }
+
 .action-button.connected:hover {
   border: 1px solid var(--Blue-500);
 }
@@ -355,6 +372,7 @@ header:hover .createButton {
   inherit: false;
   initial-value: 0px;
 }
+
 .disabled .mic-button:before,
 .mic-button.disabled:before {
   background: rgba(0, 0, 0, 0);
@@ -367,13 +385,16 @@ header:hover .createButton {
   color: black;
   transition: all 0.2s ease-in;
 }
+
 .mic-button:focus {
   border: 2px solid var(--Neutral-20);
   outline: 2px solid var(--Red-500);
 }
+
 .mic-button:hover {
   background-color: var(--Red-400);
 }
+
 .mic-button:before {
   position: absolute;
   z-index: -1;
@@ -393,6 +414,7 @@ header:hover .createButton {
   border: 2px solid var(--Neutral-20);
   outline: 2px solid var(--Neutral-80);
 }
+
 .connect-toggle:not(.connected) {
   background-color: var(--Blue-500);
   color: var(--Neutral-5);
@@ -410,12 +432,14 @@ header:hover .createButton {
   padding-bottom: 18px;
   z-index: 12;
 }
+
 .control-tray .disabled .action-button,
 .control-tray .action-button.disabled {
   background: rgba(0, 0, 0, 0);
   border: 1px solid var(--Neutral-30, #404547);
   color: var(--Neutral-30);
 }
+
 .control-tray .connection-container {
   display: flex;
   flex-direction: column;
@@ -423,17 +447,20 @@ header:hover .createButton {
   align-items: center;
   gap: 4px;
 }
+
 .control-tray .connection-container .connection-button-container {
   border-radius: 27px;
   border: 1px solid var(--Neutral-30);
   background: var(--Neutral-5);
   padding: 10px;
 }
+
 .control-tray .connection-container .text-indicator {
   font-size: 11px;
   color: var(--Blue-500);
   user-select: none;
 }
+
 .control-tray .connection-container:not(.connected) .text-indicator {
   opacity: 0;
 }
@@ -449,7 +476,8 @@ header:hover .createButton {
   padding: 10px;
   transition: all 0.6s ease-in;
 }
-.actions-nav > * {
+
+.actions-nav>* {
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -460,9 +488,11 @@ header:hover .createButton {
   0% {
     opacity: 0.9;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.9;
   }
@@ -521,9 +551,11 @@ header:hover .createButton {
   padding: 40px;
   position: relative;
   width: 100%;
+
   @media (min-width: 768px) {
     max-width: 500px;
   }
+
   max-height: 80vh;
   overflow: auto;
   margin: 20px;
@@ -555,6 +587,7 @@ header:hover .createButton {
   @media (min-width: 768px) {
     font-size: 18px;
   }
+
   line-height: 1.5;
 }
 
@@ -571,6 +604,7 @@ header:hover .createButton {
   color: #555;
   transition: all 0.3s;
   font-size: 16px;
+
   @media (min-width: 768px) {
     font-size: 18px;
   }
@@ -578,6 +612,7 @@ header:hover .createButton {
 
 .userSettingsButton .user-name {
   display: none;
+
   @media (min-width: 768px) {
     display: block;
   }
@@ -600,13 +635,15 @@ form {
 
 form .largeInput {
   font-size: 16px;
+
   @media (min-width: 768px) {
     font-size: 28px;
   }
+
   border-bottom: 1px solid var(--gray-700);
 }
 
-form > div,
+form>div,
 form label,
 form details div {
   display: flex;
@@ -615,7 +652,7 @@ form details div {
   user-select: none;
 }
 
-form details > div {
+form details>div {
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -632,9 +669,11 @@ form textarea {
   border-radius: 5px;
   padding: 10px;
   font-size: 14px;
+
   @media (min-width: 768px) {
     font-size: 18px;
   }
+
   resize: none;
   line-height: 1.4;
 }
@@ -688,10 +727,12 @@ input[type='range'] {
 .colorPicker li {
   width: 20px;
   height: 20px;
+
   @media (min-width: 768px) {
     width: 35px;
     height: 35px;
   }
+
   border-radius: 100%;
 }
 
@@ -708,14 +749,37 @@ input[type='range'] {
 }
 
 /* Agent color swatches */
-.colorPicker .color-swatch-0 button { background-color: #4285f4; }
-.colorPicker .color-swatch-1 button { background-color: #ea4335; }
-.colorPicker .color-swatch-2 button { background-color: #fbbc04; }
-.colorPicker .color-swatch-3 button { background-color: #34a853; }
-.colorPicker .color-swatch-4 button { background-color: #fa7b17; }
-.colorPicker .color-swatch-5 button { background-color: #f538a0; }
-.colorPicker .color-swatch-6 button { background-color: #a142f4; }
-.colorPicker .color-swatch-7 button { background-color: #24c1e0; }
+.colorPicker .color-swatch-0 button {
+  background-color: #4285f4;
+}
+
+.colorPicker .color-swatch-1 button {
+  background-color: #ea4335;
+}
+
+.colorPicker .color-swatch-2 button {
+  background-color: #fbbc04;
+}
+
+.colorPicker .color-swatch-3 button {
+  background-color: #34a853;
+}
+
+.colorPicker .color-swatch-4 button {
+  background-color: #fa7b17;
+}
+
+.colorPicker .color-swatch-5 button {
+  background-color: #f538a0;
+}
+
+.colorPicker .color-swatch-6 button {
+  background-color: #a142f4;
+}
+
+.colorPicker .color-swatch-7 button {
+  background-color: #24c1e0;
+}
 
 /* edit agent */
 
@@ -723,16 +787,17 @@ input[type='range'] {
   display: flex;
   flex-direction: column;
   gap: 30px;
+
   @media (min-width: 768px) {
     gap: 50px;
   }
 }
 
-.editAgent > div:first-child {
+.editAgent>div:first-child {
   max-width: 500px;
 }
 
-.editAgent > div:nth-child(2) {
+.editAgent>div:nth-child(2) {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -797,9 +862,11 @@ input[type='range'] {
 
 .roomInfo h1 {
   font-size: 16px;
+
   @media (min-width: 768px) {
     font-size: 28px;
   }
+
   font-weight: normal;
   display: flex;
   align-items: center;
@@ -819,6 +886,7 @@ input[type='range'] {
 
 .roomInfo .createButton {
   opacity: 1;
+
   @media (min-width: 768px) {
     opacity: 0;
   }
@@ -967,5 +1035,6 @@ input[type='range'] {
 .basic-face {
   display: block;
   border-radius: 50%;
-  transform: translateY(var(--hover-position, 0px)) rotate(var(--tilt-angle, 0deg));
+  overflow: hidden;
+  /* Transform is now applied via inline styles in the component */
 }
