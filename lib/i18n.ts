@@ -15,6 +15,7 @@ type Translations = {
 export const translations: Translations = {
     en: {
         // Header
+        language: 'English',
         edit: 'Edit',
         presets: 'Presets',
         yourChatterBots: 'Your ChatterBots',
@@ -47,6 +48,7 @@ export const translations: Translations = {
     },
     es: {
         // Header
+        language: 'Español',
         edit: 'Editar',
         presets: 'Preajustes',
         yourChatterBots: 'Tus ChatterBots',

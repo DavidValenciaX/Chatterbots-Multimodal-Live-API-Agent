@@ -111,7 +111,7 @@ export default function Header() {
           onClick={() => setLanguage(language === 'en' ? 'es' : 'en')}
           style={{ padding: '0 8px', height: '32px', minWidth: 'auto' }}
         >
-          {language.toUpperCase()}
+          {t('language')}
         </button>
         <button
           className="userSettingsButton"
