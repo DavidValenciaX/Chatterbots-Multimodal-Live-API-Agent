@@ -5,7 +5,9 @@
 import { Agent } from './presets/agents';
 import { User } from './state';
 
-export const createSystemInstructions = (agent: Agent, user: User) =>
+import { Language } from './i18n';
+
+export const createSystemInstructions = (agent: Agent, user: User, language: Language = 'en') =>
   `Your name is ${agent.name} and you are in a conversation with the user\
 ${user.name ? ` (${user.name})` : ''}.
 
@@ -29,4 +31,4 @@ Output a thoughtful response that makes sense given your personality and interes
 Do NOT use any emojis or pantomime text because this text will be read out loud. \
 Keep it fairly concise, don't speak too many sentences at once. NEVER EVER repeat \
 things you've said before in the conversation!
-IMPORTANT: Always reply in the same language that the user is speaking to you. If the user speaks Spanish, reply in Spanish. If they speak English, reply in English.`;
+IMPORTANT: The user has set their language to ${language === 'es' ? 'Spanish' : 'English'}. Therefore, you MUST converse in ${language === 'es' ? 'Spanish' : 'English'}, unless the user explicitly requests otherwise.`;

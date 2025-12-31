@@ -81,12 +81,17 @@ export const translations: Translations = {
     },
 };
 
+const getInitialLanguage = (): Language => {
+    if (typeof navigator === 'undefined') return 'es';
+    return navigator.language.startsWith('es') ? 'es' : 'en';
+};
+
 export const useLanguage = create<{
     language: Language;
     setLanguage: (language: Language) => void;
     t: (key: string) => string;
 }>(set => ({
-    language: 'en', // Default to English
+    language: getInitialLanguage(),
     setLanguage: (language: Language) => set({ language }),
     t: (key: string) => {
         // We access the state inside the function to get the current language
