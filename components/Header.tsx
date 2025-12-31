@@ -117,7 +117,7 @@ export default function Header() {
           className="userSettingsButton"
           onClick={() => setShowUserConfig(!showUserConfig)}
         >
-          <p className='user-name'>{name || t('yourName')}</p>
+          <p className='user-name'>{name || t('settings')}</p>
           <span className="icon">tune</span>
         </button>
       </div>

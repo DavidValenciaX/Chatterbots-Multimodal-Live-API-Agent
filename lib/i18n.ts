@@ -22,6 +22,7 @@ export const translations: Translations = {
         noneYet: 'None yet.',
         newChatterBot: 'New ChatterBot',
         yourName: 'Your name',
+        settings: 'Settings',
         // UserSettings
         userSettingsTitle:
             'This is a simple tool that allows you to design, test, and banter with custom AI characters on the fly.',
@@ -55,6 +56,7 @@ export const translations: Translations = {
         noneYet: 'Aún no hay ninguno.',
         newChatterBot: 'Nuevo ChatterBot',
         yourName: 'Tu nombre',
+        settings: 'Configuración',
         // UserSettings
         userSettingsTitle:
             'Esta es una herramienta sencilla que te permite diseñar, probar y charlar con personajes de IA personalizados sobre la marcha.',
