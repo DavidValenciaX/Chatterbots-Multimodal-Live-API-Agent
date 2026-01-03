@@ -3,67 +3,64 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { useMemo } from 'react';
-import type { WawaViseme } from '../../../hooks/demo/use-face';
+import type { AdobeViseme } from '../../../hooks/demo/use-face';
 
-// Import all 15 wawa-lipsync mouth SVGs
-import MouthSIL from '../mouths/SIL.svg';
-import MouthPP from '../mouths/PP.svg';
-import MouthFF from '../mouths/FF.svg';
-import MouthTH from '../mouths/TH.svg';
-import MouthDD from '../mouths/DD.svg';
-import MouthKK from '../mouths/kk.svg';
-import MouthCH from '../mouths/CH.svg';
-import MouthSS from '../mouths/SS.svg';
-import MouthNN from '../mouths/nn.svg';
-import MouthRR from '../mouths/RR.svg';
-import MouthAA from '../mouths/aa.svg';
-import MouthE from '../mouths/E.svg';
-import MouthI from '../mouths/I.svg';
-import MouthO from '../mouths/O.svg';
-import MouthU from '../mouths/U.svg';
+// Import all 14 Adobe Character Animator mouth SVGs
+import MouthNeutral from '../mouths/Neutral.svg';
+import MouthM from '../mouths/M.svg';
+import MouthF from '../mouths/F.svg';
+import MouthL from '../mouths/L.svg';
+import MouthD from '../mouths/D.svg';
+import MouthS from '../mouths/S.svg';
+import MouthR from '../mouths/R.svg';
+import MouthAh from '../mouths/Ah.svg';
+import MouthEe from '../mouths/Ee.svg';
+import MouthOh from '../mouths/Oh.svg';
+import MouthUh from '../mouths/Uh.svg';
+import MouthWOo from '../mouths/WO-o.svg';
+import MouthSmile from '../mouths/Smile.svg';
+import MouthSurprised from '../mouths/Surprised.svg';
 
 /**
- * Maps WawaViseme directly to its corresponding mouth sprite
+ * Maps AdobeViseme directly to its corresponding mouth sprite
  */
-function getMouthSprite(viseme: WawaViseme): string {
+function getMouthSprite(viseme: AdobeViseme): string {
     switch (viseme) {
-        case 'sil':
-            return MouthSIL;
-        case 'PP':
-            return MouthPP;
-        case 'FF':
-            return MouthFF;
-        case 'TH':
-            return MouthTH;
-        case 'DD':
-            return MouthDD;
-        case 'kk':
-            return MouthKK;
-        case 'CH':
-            return MouthCH;
-        case 'SS':
-            return MouthSS;
-        case 'nn':
-            return MouthNN;
-        case 'RR':
-            return MouthRR;
-        case 'aa':
-            return MouthAA;
-        case 'E':
-            return MouthE;
-        case 'I':
-            return MouthI;
-        case 'O':
-            return MouthO;
-        case 'U':
-            return MouthU;
+        case 'Neutral':
+            return MouthNeutral;
+        case 'M':
+            return MouthM;
+        case 'F':
+            return MouthF;
+        case 'L':
+            return MouthL;
+        case 'D':
+            return MouthD;
+        case 'S':
+            return MouthS;
+        case 'R':
+            return MouthR;
+        case 'Ah':
+            return MouthAh;
+        case 'Ee':
+            return MouthEe;
+        case 'Oh':
+            return MouthOh;
+        case 'Uh':
+            return MouthUh;
+        case 'WO-o':
+            return MouthWOo;
+        case 'Smile':
+            return MouthSmile;
+        case 'Surprised':
+            return MouthSurprised;
         default:
-            return MouthSIL;
+            return MouthNeutral;
     }
 }
 
 type MouthSpriteProps = {
-    viseme: WawaViseme;
+    viseme: AdobeViseme;
     className?: string;
     style?: React.CSSProperties;
 };

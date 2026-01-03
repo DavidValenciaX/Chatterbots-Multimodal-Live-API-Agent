@@ -118,7 +118,7 @@ export default function BasicFace({
         }}
       />
       <MouthSprite
-        viseme={mouthShape.wawaViseme}
+        viseme={mouthShape.viseme}
         style={{
           position: 'absolute',
           left: mouthLeft,

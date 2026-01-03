@@ -8,7 +8,7 @@ This project takes the robust foundation provided by Google and introduces signi
 
 This repository includes several major upgrades over the original codebase:
 
-* **👄 Advanced Lip Sync**: Replaced the basic rendering with **`wawa-lipsync`** and implemented a custom system using **High-Quality SVG Visemes**. This allows for fluid and expressive mouth movements that sync perfectly with the AI's audio output.
+* **👄 Advanced Lip Sync**: Custom audio analysis system using **Adobe Character Animator inspired visemes** with **14 High-Quality SVG mouth shapes**. This allows for fluid and expressive mouth movements that sync perfectly with the AI's audio output.
 * **🌍 Multilingual Support**: Seamless support for multiple languages. The agents are now capable of conversing fluently in Spanish, English, and other languages.
 * **🤖 Expanded Agent Library**: Added a variety of custom agent presets and personalities (see `lib/presets/agents.ts`), each with unique system instructions and behaviors.
 * **⚡ Modernized API**: Refactored the integration to use the latest **`@google/genai`** SDK (v1.29+), ensuring better performance, stability, and access to the newest model features.
@@ -29,7 +29,7 @@ This repository includes several major upgrades over the original codebase:
     npm install
     ```
 
-    *Note: This will install `wawa-lipsync`, `@google/genai`, and other necessary packages.*
+    *Note: This will install `@google/genai` and other necessary packages.*
 
 3. **Configure Environment**:
     Create a `.env` file in the root directory and add your API key:

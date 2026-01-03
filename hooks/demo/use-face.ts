@@ -6,37 +6,28 @@ import { useEffect, useRef, useState } from 'react';
 import { useLiveAPIContext } from '../../contexts/LiveAPIContext';
 
 /**
- * Wawa-Lipsync inspired viseme types (15 visemes)
+ * Adobe Character Animator inspired viseme types (14 visemes)
  * These represent specific mouth positions for different phonemes
  */
-export type WawaViseme =
-  | 'sil'  // Silence
-  | 'PP'   // P, B, M - Bilabial plosives
-  | 'FF'   // F, V - Labiodental fricatives  
-  | 'TH'   // Th sounds
-  | 'DD'   // D, T, N - Alveolar
-  | 'kk'   // K, G - Velar
-  | 'CH'   // Ch, J, Sh - Postalveolar
-  | 'SS'   // S, Z - Sibilants
-  | 'nn'   // N, L - Nasal/Lateral
-  | 'RR'   // R sounds
-  | 'aa'   // A vowel (open)
-  | 'E'    // E vowel
-  | 'I'    // I vowel (EE)
-  | 'O'    // O vowel
-  | 'U';   // U vowel (OO)
-
-/**
- * Simplified rendering visemes based on Preston Blair / Rhubarb standard
- * Maps from the 15 wawa visemes to 9 render shapes
- */
-export type Viseme = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'X';
+export type AdobeViseme =
+  | 'Neutral'   // Silence/Rest
+  | 'M'         // M, B, P - Bilabial plosives (closed lips)
+  | 'F'         // F, V - Labiodental fricatives (teeth on lip)
+  | 'L'         // L, TH - Tongue visible
+  | 'D'         // D, T, N - Alveolar consonants
+  | 'S'         // S, Z - Sibilants
+  | 'R'         // R sounds
+  | 'Ah'        // A vowel (wide open)
+  | 'Ee'        // E, I vowel (spread)
+  | 'Oh'        // O vowel (rounded)
+  | 'Uh'        // U vowel
+  | 'WO-o'      // W, OO (puckered/rounded)
+  | 'Smile'     // Expression: Happy/Smile
+  | 'Surprised'; // Expression: Surprised/Shock
 
 export type MouthShape = {
-  /** Current viseme being displayed */
-  viseme: Viseme;
-  /** Wawa-lipsync viseme for debugging */
-  wawaViseme: WawaViseme;
+  /** Current Adobe Character Animator viseme being displayed */
+  viseme: AdobeViseme;
   /** Intensity/weight of the current viseme (0-1) */
   intensity: number;
   /** Raw openness value for fine-tuning */
@@ -101,7 +92,7 @@ export function useBlink({ speed }: BlinkProps) {
 const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor;
 
 /**
- * Feature extraction for audio analysis (inspired by wawa-lipsync)
+ * Feature extraction for audio analysis
  */
 interface AudioFeatures {
   /** Frequency bands (normalized) */
@@ -115,49 +106,25 @@ interface AudioFeatures {
 }
 
 /**
- * Maps 15 wawa visemes to 9 rendering visemes
- */
-function mapWawaToRenderViseme(wawaViseme: WawaViseme): Viseme {
-  switch (wawaViseme) {
-    case 'sil': return 'X';  // Silence -> Neutral
-    case 'PP': return 'A';   // P, B, M -> Closed lips
-    case 'FF': return 'G';   // F, V -> Teeth on lip
-    case 'TH': return 'B';   // TH -> Teeth visible
-    case 'DD': return 'B';   // D, T -> Teeth visible
-    case 'kk': return 'C';   // K, G -> Slightly open
-    case 'CH': return 'B';   // CH, SH -> Teeth/spread
-    case 'SS': return 'B';   // S, Z -> Teeth visible
-    case 'nn': return 'H';   // N, L -> Tongue visible
-    case 'RR': return 'E';   // R -> Rounded
-    case 'aa': return 'D';   // A -> Wide open
-    case 'E': return 'C';    // E -> Medium open
-    case 'I': return 'B';    // I/EE -> Spread/teeth
-    case 'O': return 'E';    // O -> Rounded
-    case 'U': return 'F';    // U/OO -> Puckered
-    default: return 'X';
-  }
-}
-
-/**
  * Computes viseme scores based on audio features
- * Algorithm inspired by wawa-lipsync
+ * Algorithm maps audio characteristics to Adobe Character Animator visemes
  */
 function computeVisemeScores(
   features: AudioFeatures,
   avgFeatures: AudioFeatures,
   deltaVolume: number,
   _deltaCentroid: number
-): Record<WawaViseme, number> {
-  const scores: Record<WawaViseme, number> = {
-    sil: 0, PP: 0, FF: 0, TH: 0, DD: 0, kk: 0, CH: 0, SS: 0,
-    nn: 0, RR: 0, aa: 0, E: 0, I: 0, O: 0, U: 0
+): Record<AdobeViseme, number> {
+  const scores: Record<AdobeViseme, number> = {
+    Neutral: 0, M: 0, F: 0, L: 0, D: 0, S: 0, R: 0,
+    Ah: 0, Ee: 0, Oh: 0, Uh: 0, 'WO-o': 0, Smile: 0, Surprised: 0
   };
 
   const { bands, volume, centroid } = features;
 
   // Silence detection
   if (volume < 0.02) {
-    scores.sil = 1;
+    scores.Neutral = 1;
     return scores;
   }
 
@@ -175,82 +142,79 @@ function computeVisemeScores(
   // High frequencies (2000-8000Hz) - indices 6-7
   const highEnergy = (normalizedBands[6] + normalizedBands[7]) / 2;
 
-  // --- Bilabials (P, B, M) ---
+  // --- M: Bilabials (M, B, P) ---
   // Sharp volume burst after silence, low frequencies dominate
   if (deltaVolume > 0.15 && lowEnergy > midEnergy * 0.8) {
-    scores.PP = 0.6 + deltaVolume * 0.4;
+    scores.M = 0.6 + deltaVolume * 0.4;
   }
 
-  // --- Labiodentals (F, V) ---
+  // --- F: Labiodentals (F, V) ---
   // High frequency friction noise
   if (highEnergy > 0.4 && centroid > 3000) {
-    scores.FF = 0.5 + highEnergy * 0.3;
+    scores.F = 0.5 + highEnergy * 0.3;
   }
 
-  // --- Dentals/Alveolars (TH, D, T, N) ---
+  // --- D: Alveolars (D, T, N) ---
   // Mid-high frequencies with moderate volume
   if (midEnergy > 0.3 && highEnergy > 0.2 && volume < 0.6) {
-    scores.TH = 0.3 + midEnergy * 0.2;
-    scores.DD = 0.4 + midEnergy * 0.3;
+    scores.D = 0.4 + midEnergy * 0.3;
   }
 
-  // --- Sibilants (S, Z) ---
+  // --- L: Tongue visible (L, TH) ---
+  // Low frequencies with resonance, moderate volume
+  if (lowEnergy > 0.4 && midEnergy > 0.2 && highEnergy < 0.2) {
+    scores.L = 0.5 + lowEnergy * 0.3;
+  }
+
+  // --- S: Sibilants (S, Z) ---
   // Very strong high frequencies
   if (highEnergy > 0.6 && centroid > 4000) {
-    scores.SS = 0.7 + highEnergy * 0.3;
+    scores.S = 0.7 + highEnergy * 0.3;
   }
 
-  // --- Postalveolars (CH, SH, J) ---
-  // Moderate high frequencies, lower than sibilants
-  if (highEnergy > 0.3 && highEnergy < 0.6 && centroid > 2500 && centroid < 4000) {
-    scores.CH = 0.5 + highEnergy * 0.3;
-  }
-
-  // --- Velars (K, G) ---
-  // Short burst with mid frequencies
-  if (deltaVolume > 0.1 && midEnergy > lowEnergy) {
-    scores.kk = 0.4 + deltaVolume * 0.3;
-  }
-
-  // --- Nasals/Laterals (N, L) ---
-  // Low frequencies with resonance
-  if (lowEnergy > 0.4 && midEnergy > 0.2 && highEnergy < 0.2) {
-    scores.nn = 0.5 + lowEnergy * 0.3;
-  }
-
-  // --- R sounds ---
-  // Mid frequencies, round
+  // --- R: R sounds ---
+  // Mid frequencies, rounded
   if (midEnergy > 0.3 && lowEnergy > 0.2 && highEnergy < 0.25) {
-    scores.RR = 0.4 + midEnergy * 0.3;
+    scores.R = 0.4 + midEnergy * 0.3;
   }
 
   // --- Vowels ---
   // They have strong formants in specific frequency ranges
 
-  // A (open) - strong low-mid, moderate high
+  // Ah (open A) - strong low-mid, moderate high
   if (lowEnergy > 0.5 && midEnergy > 0.4 && highEnergy < 0.3) {
-    scores.aa = 0.6 + volume * 0.3;
+    scores.Ah = 0.6 + volume * 0.3;
   }
 
-  // E - balanced mid frequencies
-  if (midEnergy > 0.4 && lowEnergy > 0.2 && lowEnergy < 0.5) {
-    scores.E = 0.5 + midEnergy * 0.3;
-  }
-
-  // I (EE) - high formant, spread mouth
+  // Ee (E, I) - high formant, spread mouth
   if (highEnergy > 0.25 && midEnergy > 0.3 && centroid > 2000) {
-    scores.I = 0.5 + highEnergy * 0.3;
+    scores.Ee = 0.5 + highEnergy * 0.3;
   }
 
-  // O - round, low-mid frequencies
+  // Oh (O) - round, low-mid frequencies
   if (lowEnergy > 0.4 && midEnergy > 0.2 && midEnergy < 0.5 && highEnergy < 0.2) {
-    scores.O = 0.5 + lowEnergy * 0.3;
+    scores.Oh = 0.5 + lowEnergy * 0.3;
   }
 
-  // U (OO) - very low frequencies, puckered
-  if (lowEnergy > 0.5 && midEnergy < 0.3 && highEnergy < 0.15 && centroid < 1000) {
-    scores.U = 0.6 + lowEnergy * 0.3;
+  // Uh (U) - mid-low frequencies
+  if (lowEnergy > 0.3 && midEnergy > 0.2 && midEnergy < 0.4 && highEnergy < 0.15) {
+    scores.Uh = 0.5 + lowEnergy * 0.25;
   }
+
+  // WO-o (W, OO) - very low frequencies, puckered
+  if (lowEnergy > 0.5 && midEnergy < 0.3 && highEnergy < 0.15 && centroid < 1000) {
+    scores['WO-o'] = 0.6 + lowEnergy * 0.3;
+  }
+
+  // --- Expressions (triggered by specific audio patterns) ---
+
+  // Surprised - sudden loud high-frequency burst
+  if (deltaVolume > 0.25 && highEnergy > 0.5 && volume > 0.7) {
+    scores.Surprised = 0.4 + deltaVolume * 0.4;
+  }
+
+  // Smile - sustained mid-high frequencies with moderate volume (less common during speech)
+  // This is more of a secondary expression, rarely triggered by audio alone
 
   return scores;
 }
@@ -259,20 +223,20 @@ function computeVisemeScores(
  * Select the winning viseme based on scores with consistency adjustment
  */
 function selectViseme(
-  scores: Record<WawaViseme, number>,
-  currentViseme: WawaViseme,
+  scores: Record<AdobeViseme, number>,
+  currentViseme: AdobeViseme,
   holdTime: number
-): WawaViseme {
+): AdobeViseme {
   // Find highest scoring viseme
   let maxScore = 0;
-  let winningViseme: WawaViseme = 'sil';
+  let winningViseme: AdobeViseme = 'Neutral';
 
   for (const [viseme, score] of Object.entries(scores)) {
     // Boost current viseme slightly to prevent jitter
     const adjustedScore = viseme === currentViseme ? score * 1.15 : score;
     if (adjustedScore > maxScore) {
       maxScore = adjustedScore;
-      winningViseme = viseme as WawaViseme;
+      winningViseme = viseme as AdobeViseme;
     }
   }
 
@@ -294,8 +258,7 @@ export default function useFace() {
   const eyeScale = useBlink({ speed: 0.0125 });
 
   const [mouthShape, setMouthShape] = useState<MouthShape>({
-    viseme: 'X',
-    wawaViseme: 'sil',
+    viseme: 'Neutral',
     intensity: 0,
     open: 0,
     spread: 0,
@@ -304,7 +267,7 @@ export default function useFace() {
 
   // Refs for analysis state
   const currentShape = useRef({ open: 0, spread: 0, round: 0 });
-  const currentViseme = useRef<WawaViseme>('sil');
+  const currentViseme = useRef<AdobeViseme>('Neutral');
   const visemeHoldTime = useRef(0);
 
   // History for averaging and deltas
@@ -442,12 +405,8 @@ export default function useFace() {
       // Calculate intensity
       const intensity = Math.min(1, volume * 2);
 
-      // Map wawa viseme to render viseme
-      const renderViseme = mapWawaToRenderViseme(currentViseme.current);
-
       setMouthShape({
-        viseme: renderViseme,
-        wawaViseme: currentViseme.current,
+        viseme: currentViseme.current,
         intensity,
         open: currentShape.current.open,
         spread: currentShape.current.spread,
